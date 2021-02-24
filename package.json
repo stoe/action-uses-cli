@@ -1,5 +1,5 @@
 {
-  "name": "@stoe/action-uses-cli",
+  "name": "action-uses-cli",
   "version": "1.0.0",
   "description": "CLI to grab GitHub action `uses` strings",
   "keywords": [],
@@ -16,9 +16,6 @@
   },
   "bugs": {
     "url": "https://github.com/stoe/action-uses-cli/issues"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
   },
   "engines": {
     "node": ">=14",
