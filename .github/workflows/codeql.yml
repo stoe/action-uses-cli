@@ -1,0 +1,28 @@
+on:
+  push:
+  pull_request:
+  schedule:
+    # Runs at 00:00 UTC on Sat
+    - cron: '0 0 * * 6'
+
+name: CodeQL
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - run: git checkout HEAD^2
+        if: ${{ github.event_name == 'pull_request' }}
+
+      - uses: github/codeql-action/init@v1
+        with:
+          languages: javascript
+
+      - uses: github/codeql-action/autobuild@v1
+
+      - uses: github/codeql-action/analyze@v1
