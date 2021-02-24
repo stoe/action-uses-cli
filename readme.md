@@ -7,7 +7,7 @@
 ## Install
 
 ```sh
-$ npm i -g @stoe/action-uses-cli
+$ npm i -g action-uses-cli
 ```
 
 ## Usage
