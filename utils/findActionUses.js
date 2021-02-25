@@ -73,12 +73,14 @@ const getOrganizations = async (octokit, enterprise, cursor = null, records = []
  * @function findActionsUsed
  *
  * @param {import('@octokit/core').Octokit} octokit
- * @param {string} owner
- * @param {string} [repo=null]
+ * @param {object} options
+ * @param {string} options.owner
+ * @param {string} [options.repo=null]
+ * @param {exclude} [options.exclude=false]
  *
  * @returns {String[][]}
  */
-const findActionsUsed = async (octokit, owner, repo = null) => {
+const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) => {
   const workflows = []
   const actions = []
 
@@ -133,6 +135,12 @@ const findActionsUsed = async (octokit, owner, repo = null) => {
             const {uses} = step
 
             if (uses) {
+              const isCreatedByGitHub = uses.indexOf('actions/') === 0 || uses.indexOf('github/') === 0
+
+              if (exclude && isCreatedByGitHub) {
+                continue
+              }
+
               actions.push([owner, _repo, path, uses])
             }
           }
@@ -158,13 +166,15 @@ class FindActionUses {
    * @param {string} owner
    * @param {string} repository
    * @param {string} csv
+   * @param {boolean} exclude
    */
-  constructor(token, enterprise, owner, repository, csv) {
+  constructor(token, enterprise, owner, repository, csv, exclude) {
     this.token = token
     this.enterprise = enterprise
     this.owner = owner
     this.repository = repository
     this.path = csv
+    this.exclude = exclude
 
     this.octokit = new MyOctokit({
       auth: token,
@@ -185,7 +195,7 @@ class FindActionUses {
   }
 
   async getActionUses() {
-    const {octokit, enterprise, owner, repository} = this
+    const {octokit, enterprise, exclude, owner, repository} = this
 
     if (enterprise) {
       const actions = []
@@ -193,7 +203,7 @@ class FindActionUses {
       const orgs = await getOrganizations(octokit, enterprise)
 
       for await (const org of orgs) {
-        const res = await findActionsUsed(octokit, org)
+        const res = await findActionsUsed(octokit, {owner: org, exclude})
         actions.push(...res)
       }
 
@@ -201,12 +211,12 @@ class FindActionUses {
     }
 
     if (owner) {
-      return await findActionsUsed(octokit, owner)
+      return await findActionsUsed(octokit, {owner, exclude})
     }
 
     const [repoOwner, repo] = repository.split('/')
 
-    return await findActionsUsed(octokit, repoOwner, repo)
+    return await findActionsUsed(octokit, {owner: repoOwner, repo, exclude})
   }
 
   async saveCsv(actions) {
