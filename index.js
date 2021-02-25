@@ -28,6 +28,10 @@ process.on('unhandledRejection', err => {
     help && cli.showHelp(0)
     version && cli.showVersion(0)
 
+    if (!token) {
+      throw new Error(`${red('GitHub Personal Access Token (PAT) not provided')}`)
+    }
+
     if (!(enterprise || owner || repository)) {
       throw new Error(`${red('no options provided')}`)
     }

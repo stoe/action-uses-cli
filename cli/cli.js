@@ -75,7 +75,7 @@ module.exports = meow(
       token: {
         type: 'string',
         alias: 't',
-        default: process.env.GITHUB_TOKEN
+        default: process.env.GITHUB_TOKEN || ''
       }
     }
   }
