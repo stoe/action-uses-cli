@@ -17,6 +17,10 @@ module.exports = meow(
     ${yellow(`--repository`)}, ${yellow(`-r`)}     GitHub repository name with owner ${dim('(e.g. owner/repo)')}
 
   ${bold('Additional options')}
+    ${yellow(`--exclude`)}            Exclude actions created by GitHub
+                         ${dim(
+                           'i.e. actions located in the https://github.com/actions and https://github.com/github organizations'
+                         )}
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
 
@@ -68,6 +72,10 @@ module.exports = meow(
         type: 'string',
         alias: 'r',
         isMultiple: false
+      },
+      exclude: {
+        type: 'boolean',
+        default: false
       },
       csv: {
         type: 'string'

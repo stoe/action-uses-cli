@@ -23,7 +23,7 @@ process.on('unhandledRejection', err => {
     init()
 
     // Get options/flags
-    const {help, version, enterprise, owner, repository, csv, token} = cli.flags
+    const {help, version, enterprise, exclude, owner, repository, csv, token} = cli.flags
 
     help && cli.showHelp(0)
     version && cli.showVersion(0)
@@ -51,7 +51,7 @@ process.on('unhandledRejection', err => {
     )
     console.log()
 
-    const fau = new FindActionUses(token, enterprise, owner, repository, csv)
+    const fau = new FindActionUses(token, enterprise, owner, repository, csv, exclude)
     const actions = await fau.getActionUses()
 
     if (csv) {
