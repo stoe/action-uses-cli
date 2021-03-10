@@ -1,7 +1,9 @@
 const fs = require('fs')
 const yaml = require('js-yaml')
 const stringify = require('csv-stringify/lib/sync')
-const {yellow} = require('chalk')
+const {blue, yellow} = require('chalk')
+const ora = require('ora')
+const spinner = ora()
 
 const {Octokit} = require('@octokit/core')
 const {throttling} = require('@octokit/plugin-throttling')
@@ -148,12 +150,12 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
       }
     }
   } catch (error) {
-    console.log(
-      yellow(
-        `⚠ ${owner} cannot be searched either because the resources do not exist or you do not have permission to view them`
-      )
+    spinner.warn(
+      `${owner} cannot be searched either because the resources do not exist or you do not have permission to view them`
     )
   }
+
+  spinner.isSpinning & spinner.succeed()
 
   return actions
 }
@@ -180,15 +182,15 @@ class FindActionUses {
       auth: token,
       throttle: {
         onRateLimit: (retryAfter, options) => {
-          console.warn(`Request quota exhausted for request ${options.method} ${options.url}`)
+          spinner.warn(yellow(`Request quota exhausted for request ${options.method} ${options.url}`))
 
           if (options.request.retryCount === 0) {
-            console.debug(`Retrying after ${retryAfter} seconds!`)
+            spinner.warn(yellow(`Retrying after ${retryAfter} seconds!`))
             return true
           }
         },
         onAbuseLimit: (retryAfter, options) => {
-          console.warn(`Abuse detected for request ${options.method} ${options.url}`)
+          spinner.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
         }
       }
     })
@@ -198,11 +200,19 @@ class FindActionUses {
     const {octokit, enterprise, exclude, owner, repository} = this
 
     if (enterprise) {
+      console.log(`Gathering GitHub action \`uses\` strings for ${enterprise}`)
+    } else {
+      spinner.start(`Gathering GitHub action \`uses\` strings for ${owner || repository}`)
+    }
+
+    if (enterprise) {
       const actions = []
 
       const orgs = await getOrganizations(octokit, enterprise)
 
       for await (const org of orgs) {
+        spinner.start(`searching actions for ${org}`)
+
         const res = await findActionsUsed(octokit, {owner: org, exclude})
         actions.push(...res)
       }
@@ -222,6 +232,8 @@ class FindActionUses {
   async saveCsv(actions) {
     const {path} = this
 
+    spinner.start(`saving CSV in ${blue(`${path}`)}`)
+
     const csv = stringify(actions, {
       header: true,
       columns: ['owner', 'repo', 'workflow', 'uses']
@@ -229,8 +241,10 @@ class FindActionUses {
 
     try {
       fs.writeFileSync(path, csv)
+
+      spinner.succeed()
     } catch (error) {
-      throw error
+      spinner.fail(error.message)
     }
   }
 }

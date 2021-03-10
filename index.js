@@ -3,7 +3,7 @@
 const handleError = require('cli-handle-error')
 const cli = require('./cli/cli.js')
 const init = require('./cli/init.js')
-const {blue, dim, red} = require('chalk')
+const {red} = require('chalk')
 
 const FindActionUses = require('./utils/findActionUses')
 
@@ -44,26 +44,14 @@ process.on('unhandledRejection', err => {
       throw new Error(`${red('please provide a valid path for the CSV output')}`)
     }
 
-    console.log(
-      `Gathering GitHub action \`uses\` strings for ${enterprise || owner || repository} ... ${dim(
-        'this could take a while'
-      )}`
-    )
-    console.log()
-
     const fau = new FindActionUses(token, enterprise, owner, repository, csv, exclude)
     const actions = await fau.getActionUses()
 
     if (csv) {
       fau.saveCsv(actions)
-
-      console.log(`CSV saved at ${blue(`${csv}`)}`)
     } else {
       console.log(actions)
     }
-
-    console.log()
-    console.log(`Done.`)
   } catch (error) {
     handleError(error.message, error, false, false)
     cli.showHelp(1)
