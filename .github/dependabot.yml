@@ -9,6 +9,8 @@ updates:
       timezone: 'Europe/Berlin'
     commit-message:
       prefix: 'action'
+    labels:
+      - 'github-action :robot:'
 
   - package-ecosystem: 'npm'
     directory: '/'
@@ -18,8 +20,7 @@ updates:
       time: '09:00'
       timezone: 'Europe/Berlin'
     commit-message:
-      prefix: 'npm prod'
-      prefix-development: 'npm dev'
+      prefix: 'npm'
       include: 'scope'
     labels:
       - 'dependency :robot:'
