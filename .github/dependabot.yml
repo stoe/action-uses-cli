@@ -15,10 +15,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
-      day: 'saturday'
-      time: '09:00'
-      timezone: 'Europe/Berlin'
+      interval: 'monthly'
     commit-message:
       prefix: 'npm'
       include: 'scope'
