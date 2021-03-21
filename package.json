@@ -4,19 +4,12 @@
   "description": "CLI to grab GitHub action `uses` strings",
   "keywords": [],
   "author": {
-    "name": "Stefan Stölzle",
+    "name": "Stefan StÃ¶lzle",
     "email": "stefan@stoelzle.me",
     "url": "https://github.com/stoe"
   },
   "license": "MIT",
-  "homepage": "https://github.com/stoe/action-uses-cli#readme",
-  "repository": {
-    "type": "git",
-    "url": "ssh://git@github.com/stoe/action-uses-cli.git"
-  },
-  "bugs": {
-    "url": "https://github.com/stoe/action-uses-cli/issues"
-  },
+  "repository": "github:stoe/action-uses-cli",
   "engines": {
     "node": ">=14",
     "npm": ">=7"
