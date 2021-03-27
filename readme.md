@@ -52,5 +52,4 @@ $ action-uses-cli -o my-org --csv /path/to/action-uses.csv
 
 ## License
 
-- [MIT](./license) © [Stefan Stölzle](https://github.com/stoe)
-- [Code of Conduct](./.github/code_of_conduct.md)
+[MIT](./license) © [Stefan Stölzle](https://github.com/stoe)
