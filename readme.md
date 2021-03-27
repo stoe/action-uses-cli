@@ -25,6 +25,7 @@ $ action-uses-cli [--options]
 
 ## Additional options
 
+- `--exclude` Exclude actions created by GitHub, i.e. actions from https://github.com/actions and https://github.com/github organizations'
 - `--csv` Path to CSV for the output (e.g. `/path/to/action-uses.csv`)
 - `--token`, `-t` GitHub Personal Access Token (PAT) (default `GITHUB_TOKEN`)
 - `--help`, `-h` Print action-uses-cli help
