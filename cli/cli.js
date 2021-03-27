@@ -19,7 +19,7 @@ module.exports = meow(
   ${bold('Additional options')}
     ${yellow(`--exclude`)}            Exclude actions created by GitHub
                          ${dim(
-                           'i.e. actions located in the https://github.com/actions and https://github.com/github organizations'
+                           'i.e. actions located from https://github.com/actions and https://github.com/github organizations'
                          )}
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
