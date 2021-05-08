@@ -1,9 +1,12 @@
 {
   "name": "@stoe/action-uses-cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "CLI to grab GitHub action `uses` strings",
-  "keywords": [],
+  "keywords": [
+    "github-actions",
+    "cli"
+  ],
   "author": {
     "name": "Stefan Stölzle",
     "email": "stefan@stoelzle.me",
@@ -19,18 +22,18 @@
     "npm": ">=7"
   },
   "bin": {
-    "action-uses-cli": "./cli.js"
+    "action-uses-cli": "./index.js"
   },
   "directories": {
     "lib": "utils"
   },
   "files": [
     "utils/",
-    "cli.js",
+    "index.js",
     "license",
     "readme.md"
   ],
-  "main": "cli.js",
+  "main": "index.js",
   "scripts": {
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."
