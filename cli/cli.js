@@ -22,6 +22,7 @@ module.exports = meow(
                            'i.e. actions located from https://github.com/actions and https://github.com/github organizations'
                          )}
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
+    ${yellow(`--md`)}                 Path to markdown for the output ${dim('(e.g. /path/to/action-uses.md)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
 
     ${yellow(`--help`)}, ${yellow(`-h`)}           Print action-uses-cli help
@@ -42,6 +43,9 @@ module.exports = meow(
 
     ${dim('# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.csv')}
     $ action-uses-cli -o my-org --csv /path/to/action-uses.csv
+
+    ${dim('# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.md')}
+    $ action-uses-cli -o my-org --md /path/to/action-uses.md
 `,
   {
     booleanDefault: undefined,
@@ -78,6 +82,9 @@ module.exports = meow(
         default: false
       },
       csv: {
+        type: 'string'
+      },
+      md: {
         type: 'string'
       },
       token: {

@@ -26,7 +26,8 @@ $ action-uses-cli [--options]
 ## Additional options
 
 - `--exclude` Exclude actions created by GitHub, i.e. actions from https://github.com/actions and https://github.com/github organizations'
-- `--csv` Path to CSV for the output (e.g. `/path/to/action-uses.csv`)
+- `--csv` Path to CSV file for the output (e.g. `/path/to/action-uses.csv`)
+- `--md` Path to markdown file for the output (e.g. `/path/to/action-uses.md`)
 - `--token`, `-t` GitHub Personal Access Token (PAT) (default `GITHUB_TOKEN`)
 - `--help`, `-h` Print action-uses-cli help
 - `--version`, `-v` Print action-uses-cli version
@@ -48,6 +49,9 @@ $ action-uses-cli -o stoe/action-uses-cli
 
 # Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.csv
 $ action-uses-cli -o my-org --csv /path/to/action-uses.csv
+
+# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.md
+$ action-uses-cli -o my-org --md /path/to/action-uses.md
 ```
 
 ## License

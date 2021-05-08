@@ -170,12 +170,12 @@ class FindActionUses {
    * @param {string} csv
    * @param {boolean} exclude
    */
-  constructor(token, enterprise, owner, repository, csv, exclude) {
+  constructor(token, enterprise, owner, repository, csv, md, exclude) {
     this.token = token
     this.enterprise = enterprise
     this.owner = owner
     this.repository = repository
-    this.path = csv
+    this.path = csv || md
     this.exclude = exclude
 
     this.octokit = new MyOctokit({
@@ -241,6 +241,29 @@ class FindActionUses {
 
     try {
       fs.writeFileSync(path, csv)
+
+      spinner.succeed()
+    } catch (error) {
+      spinner.fail(error.message)
+    }
+  }
+
+  async saveMarkdown(actions) {
+    const {path} = this
+
+    spinner.start(`saving markdown in ${blue(`${path}`)}`)
+
+    let md = `| owner | repo | path | uses |
+| ----- | ---- | ---- | ---- |
+`
+
+    for (const [owner, repo, file, uses] of actions) {
+      md += `| ${owner} | ${repo} | ${file} | ${uses} |
+`
+    }
+
+    try {
+      fs.writeFileSync(path, md)
 
       spinner.succeed()
     } catch (error) {
