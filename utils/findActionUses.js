@@ -1,14 +1,15 @@
-const fs = require('fs')
-const yaml = require('js-yaml')
-const stringify = require('csv-stringify/lib/sync')
-const {blue, yellow} = require('chalk')
-const ora = require('ora')
-const spinner = ora()
+import stringify from 'csv-stringify/lib/sync.js'
+import chalk from 'chalk'
+import wait from './wait.js'
 
-const {Octokit} = require('@octokit/core')
-const {throttling} = require('@octokit/plugin-throttling')
+import {writeFileSync} from 'fs'
+import {load} from 'js-yaml'
+import {Octokit} from '@octokit/core'
+import {throttling} from '@octokit/plugin-throttling'
+import {paginateRest} from '@octokit/plugin-paginate-rest'
 
-const MyOctokit = Octokit.plugin(throttling)
+const {blue, dim, inverse, red, yellow} = chalk
+const MyOctokit = Octokit.plugin(throttling, paginateRest)
 
 const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {
   enterprise(slug: $enterprise) {
@@ -86,7 +87,7 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
   const workflows = []
   const actions = []
 
-  let q = `uses in:file language:yaml path:.github/workflows`
+  let q = `uses in:file path:.github/workflows extension:yml language:yaml`
 
   if (repo !== null) {
     q += ` repo:${owner}/${repo}`
@@ -95,27 +96,33 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
   }
 
   try {
-    const {data} = await octokit.request('GET /search/code', {
-      q
-    })
+    for await (const {data, headers} of octokit.paginate.iterator('GET /search/code', {
+      q,
+      per_page: 100
+    })) {
+      if (data.total_count > 0) {
+        data.map(item => {
+          const {
+            name,
+            path,
+            repository: {name: r},
+            sha
+          } = item
 
-    if (data.items && data.items.length > 0) {
-      data.items.map(item => {
-        const {
-          name,
-          path,
-          repository: {name: r},
-          sha
-        } = item
-
-        workflows.push({
-          owner,
-          repo: r,
-          name,
-          path,
-          sha
+          workflows.push({
+            owner,
+            repo: r,
+            name,
+            path,
+            sha
+          })
         })
-      })
+      }
+
+      if (headers?.link?.includes('rel="next"')) {
+        // wait 20.5s to not hit the 30 requests per minute rate limit
+        await wait(20500)
+      }
     }
 
     for await (const {repo: _repo, path} of workflows) {
@@ -128,7 +135,7 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
       if (wf.content) {
         const buff = Buffer.from(wf.content, 'base64')
         const content = buff.toString('utf-8')
-        const {jobs} = yaml.load(content, 'utf8')
+        const {jobs} = load(content, 'utf8')
 
         for (const job in jobs) {
           const {steps} = jobs[job]
@@ -143,19 +150,21 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
                 continue
               }
 
-              actions.push([owner, _repo, path, uses])
+              actions.push({owner, repo: _repo, workflow: path, action: uses})
             }
           }
         }
       }
     }
   } catch (error) {
-    spinner.warn(
+    if (error.status === 401) {
+      throw new Error('Bad credentials')
+    }
+
+    console.warn(
       `${owner} cannot be searched either because the resources do not exist or you do not have permission to view them`
     )
   }
-
-  spinner.isSpinning & spinner.succeed()
 
   return actions
 }
@@ -168,6 +177,7 @@ class FindActionUses {
    * @param {string} owner
    * @param {string} repository
    * @param {string} csv
+   * @param {string} md
    * @param {boolean} exclude
    */
   constructor(token, enterprise, owner, repository, csv, md, exclude) {
@@ -175,22 +185,23 @@ class FindActionUses {
     this.enterprise = enterprise
     this.owner = owner
     this.repository = repository
-    this.path = csv || md
+    this.csvPath = csv
+    this.mdPath = md
     this.exclude = exclude
 
     this.octokit = new MyOctokit({
       auth: token,
       throttle: {
         onRateLimit: (retryAfter, options) => {
-          spinner.warn(yellow(`Request quota exhausted for request ${options.method} ${options.url}`))
+          console.warn(yellow(`Request quota exhausted for request ${options.method} ${options.url}`))
 
           if (options.request.retryCount === 0) {
-            spinner.warn(yellow(`Retrying after ${retryAfter} seconds!`))
+            console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
             return true
           }
         },
         onAbuseLimit: (retryAfter, options) => {
-          spinner.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
+          console.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
         }
       }
     })
@@ -199,19 +210,19 @@ class FindActionUses {
   async getActionUses() {
     const {octokit, enterprise, exclude, owner, repository} = this
 
-    if (enterprise) {
-      console.log(`Gathering GitHub action \`uses\` strings for ${enterprise}`)
-    } else {
-      spinner.start(`Gathering GitHub action \`uses\` strings for ${owner || repository}`)
-    }
+    console.log(`
+Gathering GitHub Action ${inverse('uses')} strings for ${blue(enterprise || owner || repository)}
+${dim('(this could take a while...)')}
+`)
 
     if (enterprise) {
       const actions = []
 
       const orgs = await getOrganizations(octokit, enterprise)
+      console.log(`${dim(`searching in %s organizations`)}`, orgs.length)
 
       for await (const org of orgs) {
-        spinner.start(`searching actions for ${org}`)
+        console.log(`searching actions for ${org}`)
 
         const res = await findActionsUsed(octokit, {owner: org, exclude})
         actions.push(...res)
@@ -230,46 +241,47 @@ class FindActionUses {
   }
 
   async saveCsv(actions) {
-    const {path} = this
+    const {csvPath} = this
 
-    spinner.start(`saving CSV in ${blue(`${path}`)}`)
+    console.log(`saving CSV in ${blue(`${csvPath}`)}`)
 
-    const csv = stringify(actions, {
-      header: true,
-      columns: ['owner', 'repo', 'workflow', 'uses']
-    })
+    const csv = stringify(
+      actions.map(i => [i.owner, i.repo, i.workflow, i.action]),
+      {
+        header: true,
+        columns: ['owner', 'repo', 'workflow', 'action']
+      }
+    )
 
     try {
-      fs.writeFileSync(path, csv)
-
-      spinner.succeed()
+      await writeFileSync(csvPath, csv)
     } catch (error) {
-      spinner.fail(error.message)
+      console.error(red(error.message))
     }
   }
 
   async saveMarkdown(actions) {
-    const {path} = this
+    const {mdPath} = this
 
-    spinner.start(`saving markdown in ${blue(`${path}`)}`)
+    console.log(`saving markdown in ${blue(`${mdPath}`)}`)
 
-    let md = `| owner | repo | path | uses |
-| ----- | ---- | ---- | ---- |
+    let md = `owner | repo | workflow | action
+----- | ----- | ----- | -----
 `
 
-    for (const [owner, repo, file, uses] of actions) {
-      md += `| ${owner} | ${repo} | ${file} | ${uses} |
+    for (const {owner, repo, workflow, action} of actions) {
+      const link = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
+
+      md += `${owner} | ${repo} | [${workflow}](${link}) | ${action}
 `
     }
 
     try {
-      fs.writeFileSync(path, md)
-
-      spinner.succeed()
+      writeFileSync(mdPath, md)
     } catch (error) {
-      spinner.fail(error.message)
+      console.error(red(error.message))
     }
   }
 }
 
-module.exports = FindActionUses
+export default FindActionUses
