@@ -257,8 +257,8 @@ class FindActionUses {
 | ----- | ---- | ---- | ---- |
 `
 
-    for (const [owner, repo, path, uses] of actions) {
-      md += `| ${owner} | ${repo} | ${path} | ${uses} |
+    for (const [owner, repo, file, uses] of actions) {
+      md += `| ${owner} | ${repo} | ${file} | ${uses} |
 `
     }
 
