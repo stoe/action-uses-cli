@@ -4,16 +4,10 @@
 
 > CLI to grab GitHub action `uses` strings
 
-## Install
-
-```sh
-$ npm i -g action-uses-cli
-```
-
 ## Usage
 
 ```sh
-$ action-uses-cli [--options]
+$ npx @stoe/action-uses-cli [--options]
 ```
 
 ## Required options (one of)
