@@ -23,7 +23,7 @@ process.on('unhandledRejection', err => {
     init()
 
     // Get options/flags
-    const {help, version, enterprise, exclude, owner, repository, csv, token} = cli.flags
+    const {help, version, enterprise, exclude, owner, repository, csv, md, token} = cli.flags
 
     help && cli.showHelp(0)
     version && cli.showVersion(0)
@@ -44,11 +44,13 @@ process.on('unhandledRejection', err => {
       throw new Error(`${red('please provide a valid path for the CSV output')}`)
     }
 
-    const fau = new FindActionUses(token, enterprise, owner, repository, csv, exclude)
+    const fau = new FindActionUses(token, enterprise, owner, repository, csv, md, exclude)
     const actions = await fau.getActionUses()
 
     if (csv) {
       fau.saveCsv(actions)
+    } else if (md) {
+      fau.saveMarkdown(actions)
     } else {
       console.log(actions)
     }
