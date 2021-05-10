@@ -134,10 +134,14 @@ const cli = meow(
     const actions = await fau.getActionUses()
 
     // create and save CSV
-    csv & fau.saveCsv(actions)
+    if (csv) {
+      fau.saveCsv(actions)
+    }
 
     // create and save markdown
-    md & fau.saveMarkdown(actions)
+    if (md) {
+      fau.saveMarkdown(actions)
+    }
 
     if (!csv && !md) {
       // output to stdout
