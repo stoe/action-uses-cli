@@ -26,12 +26,6 @@ const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {
 }`
 
 /**
- * @typedef {Object} Organization
- * @property {string} login
- * @readonly
- */
-
-/**
  * @async
  * @private
  * @function getOrganizations
@@ -65,12 +59,6 @@ const getOrganizations = async (octokit, enterprise, cursor = null, records = []
 }
 
 /**
- * @typedef Repository
- * @property {string} owner
- * @property {string} repo
- */
-
-/**
  * @async
  * @private
  * @function findActionsUsed
@@ -79,12 +67,14 @@ const getOrganizations = async (octokit, enterprise, cursor = null, records = []
  * @param {object} options
  * @param {string} options.owner
  * @param {string} [options.repo=null]
- * @param {exclude} [options.exclude=false]
+ * @param {boolean} [options.exclude=false]
  *
- * @returns {String[][]}
+ * @returns {Action[]}
  */
 const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) => {
   const workflows = []
+
+  /** @type Action[] */
   const actions = []
 
   let q = `uses in:file path:.github/workflows extension:yml language:yaml`
@@ -119,7 +109,7 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
         })
       }
 
-      if (headers?.link?.includes('rel="next"')) {
+      if (headers && headers.link && headers.link.includes('rel="next"')) {
         // wait 20.5s to not hit the 30 requests per minute rate limit
         await wait(20500)
       }
@@ -171,7 +161,6 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
 
 class FindActionUses {
   /**
-   *
    * @param {string} token
    * @param {string} enterprise
    * @param {string} owner
@@ -207,6 +196,9 @@ class FindActionUses {
     })
   }
 
+  /**
+   * @returns {Action[]}
+   */
   async getActionUses() {
     const {octokit, enterprise, exclude, owner, repository} = this
 
@@ -216,6 +208,7 @@ ${dim('(this could take a while...)')}
 `)
 
     if (enterprise) {
+      /** @type Action[] */
       const actions = []
 
       const orgs = await getOrganizations(octokit, enterprise)
@@ -240,6 +233,10 @@ ${dim('(this could take a while...)')}
     return await findActionsUsed(octokit, {owner: repoOwner, repo, exclude})
   }
 
+  /**
+   * @param {Action[]} actions
+   * @returns {string}
+   */
   async saveCsv(actions) {
     const {csvPath} = this
 
@@ -258,8 +255,14 @@ ${dim('(this could take a while...)')}
     } catch (error) {
       console.error(red(error.message))
     }
+
+    return csv
   }
 
+  /**
+   * @param {Action[]} actions
+   * @returns {string}
+   */
   async saveMarkdown(actions) {
     const {mdPath} = this
 
@@ -281,7 +284,24 @@ ${dim('(this could take a while...)')}
     } catch (error) {
       console.error(red(error.message))
     }
+
+    return md
   }
 }
+
+/**
+ * @typedef {object} Action
+ * @property {string} owner
+ * @property {string} repo
+ * @property {string} workflow
+ * @property {string} action
+ * @readonly
+ */
+
+/**
+ * @typedef {object} Organization
+ * @property {string} login
+ * @readonly
+ */
 
 export default FindActionUses

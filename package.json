@@ -14,9 +14,6 @@
   },
   "license": "MIT",
   "repository": "github:stoe/action-uses-cli",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "engines": {
     "node": ">=14",
     "npm": ">=7"
@@ -33,7 +30,7 @@
     "license",
     "readme.md"
   ],
-  "main": "index.js",
+  "exports": "utils/FindActionUses.js",
   "scripts": {
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."

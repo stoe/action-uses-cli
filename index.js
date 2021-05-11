@@ -2,7 +2,7 @@
 
 import chalk from 'chalk'
 import meow from 'meow'
-import FindActionUses from './utils/findActionUses.js'
+import FindActionUses from './utils/FindActionUses.js'
 
 const {dim, blue, bold, red, yellow} = chalk
 const cli = meow(
