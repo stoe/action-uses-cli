@@ -1,8 +1,9 @@
+name: Test
+
 on:
   push:
-    branches-ignore: [main]
-
-name: Test
+    branches-ignore:
+      - main
 
 jobs:
   test:

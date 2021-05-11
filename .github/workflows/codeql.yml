@@ -1,8 +1,9 @@
+name: CodeQL
+
 on:
   push:
-    branches-ignore: [main]
-
-name: CodeQL
+    branches-ignore:
+      - main
 
 jobs:
   codeql:
