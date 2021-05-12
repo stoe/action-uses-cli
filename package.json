@@ -1,6 +1,6 @@
 {
   "name": "@stoe/action-uses-cli",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "type": "module",
   "description": "CLI to grab GitHub action `uses` strings",
   "keywords": [
@@ -9,7 +9,7 @@
   ],
   "author": {
     "name": "Stefan Stölzle",
-    "email": "stefan@stoelzle.me",
+    "email": "stefan@github.com",
     "url": "https://github.com/stoe"
   },
   "license": "MIT",
