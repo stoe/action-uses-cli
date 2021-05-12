@@ -1,6 +1,6 @@
 {
   "name": "@stoe/action-uses-cli",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "type": "module",
   "description": "CLI to grab GitHub action `uses` strings",
   "keywords": [
@@ -30,7 +30,7 @@
     "license",
     "readme.md"
   ],
-  "exports": "utils/FindActionUses.js",
+  "exports": "./utils/FindActionUses.js",
   "scripts": {
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."
