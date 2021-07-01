@@ -25,6 +25,7 @@ const cli = meow(
                          ${dim(
                            'i.e. actions from https://github.com/actions and https://github.com/github organizations'
                          )}
+    ${yellow(`--unique`)}             List unique GitHub Actions only
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
     ${yellow(`--md`)}                 Path to markdown for the output ${dim('(e.g. /path/to/action-uses.md)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
@@ -86,6 +87,10 @@ const cli = meow(
         type: 'boolean',
         default: false
       },
+      unique: {
+        type: 'boolean',
+        default: false
+      },
       csv: {
         type: 'string'
       },
@@ -105,7 +110,7 @@ const cli = meow(
 ;(async () => {
   try {
     // Get options/flags
-    const {help, version, enterprise, exclude, owner, repository, csv, md, token} = cli.flags
+    const {help, version, enterprise, exclude, unique, owner, repository, csv, md, token} = cli.flags
 
     help && cli.showHelp(0)
     version && cli.showVersion(0)
@@ -131,22 +136,20 @@ const cli = meow(
     }
 
     const fau = new FindActionUses(token, enterprise, owner, repository, csv, md, exclude)
-    const actions = await fau.getActionUses()
+    const actions = await fau.getActionUses(unique)
 
     // create and save CSV
     if (csv) {
-      fau.saveCsv(actions)
+      fau.saveCsv(actions, unique)
     }
 
     // create and save markdown
     if (md) {
-      fau.saveMarkdown(actions)
+      fau.saveMarkdown(actions, unique)
     }
 
-    if (!csv && !md) {
-      // output to stdout
-      console.log(JSON.stringify(actions, null, 2))
-    }
+    // always output JSON to stdout
+    console.log(JSON.stringify(actions, null, 2))
   } catch (error) {
     console.error(`\n  ${red('ERROR: %s')}`, error.message)
     cli.showHelp(1)

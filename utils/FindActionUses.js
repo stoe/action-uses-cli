@@ -8,7 +8,7 @@ import {Octokit} from '@octokit/core'
 import {throttling} from '@octokit/plugin-throttling'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
 
-const {blue, dim, inverse, red, yellow} = chalk
+const {blue, dim, inverse, italic, red, yellow} = chalk
 const MyOctokit = Octokit.plugin(throttling, paginateRest)
 
 const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {
@@ -199,18 +199,19 @@ class FindActionUses {
   /**
    * @returns {Action[]}
    */
-  async getActionUses() {
+  async getActionUses(unique) {
     const {octokit, enterprise, exclude, owner, repository} = this
 
     console.log(`
-Gathering GitHub Action ${inverse('uses')} strings for ${blue(enterprise || owner || repository)}
+Gathering ${unique ? italic('unique ') : ''}GitHub Action ${inverse('uses')} strings for ${blue(
+      enterprise || owner || repository
+    )}
 ${dim('(this could take a while...)')}
 `)
 
-    if (enterprise) {
-      /** @type Action[] */
-      const actions = []
+    let actions = []
 
+    if (enterprise) {
       const orgs = await getOrganizations(octokit, enterprise)
       console.log(`${dim(`searching in %s organizations`)}`, orgs.length)
 
@@ -220,35 +221,59 @@ ${dim('(this could take a while...)')}
         const res = await findActionsUsed(octokit, {owner: org, exclude})
         actions.push(...res)
       }
-
-      return actions
     }
 
     if (owner) {
-      return await findActionsUsed(octokit, {owner, exclude})
+      actions = await findActionsUsed(octokit, {owner, exclude})
     }
 
-    const [repoOwner, repo] = repository.split('/')
+    if (repository) {
+      const [repoOwner, repo] = repository.split('/')
 
-    return await findActionsUsed(octokit, {owner: repoOwner, repo, exclude})
+      actions = await findActionsUsed(octokit, {owner: repoOwner, repo, exclude})
+    }
+
+    if (unique) {
+      const actionsSet = new Set()
+
+      actions.map(({action}) => {
+        actionsSet.add(action)
+      })
+
+      return [...actionsSet]
+    }
+
+    return actions
   }
 
   /**
    * @param {Action[]} actions
+   * @param {boolean} unique
    * @returns {string}
    */
-  async saveCsv(actions) {
+  async saveCsv(actions, unique) {
     const {csvPath} = this
+    let csv = ''
 
     console.log(`saving CSV in ${blue(`${csvPath}`)}`)
 
-    const csv = stringify(
-      actions.map(i => [i.owner, i.repo, i.workflow, i.action]),
-      {
-        header: true,
-        columns: ['owner', 'repo', 'workflow', 'action']
-      }
-    )
+    if (unique) {
+      csv = stringify(
+        actions.map(i => [i]),
+        {
+          header: true,
+          columns: ['action']
+        }
+      )
+    } else {
+      csv = stringify(
+        actions.map(i => [i.owner, i.repo, i.workflow, i.action]),
+        {
+          header: true,
+          columns: ['owner', 'repo', 'workflow', 'action']
+        }
+      )
+    }
 
     try {
       await writeFileSync(csvPath, csv)
@@ -261,22 +286,44 @@ ${dim('(this could take a while...)')}
 
   /**
    * @param {Action[]} actions
+   * @param {boolean} unique
    * @returns {string}
    */
-  async saveMarkdown(actions) {
+  async saveMarkdown(actions, unique) {
     const {mdPath} = this
+    let md = ''
 
     console.log(`saving markdown in ${blue(`${mdPath}`)}`)
 
-    let md = `owner | repo | workflow | action
+    if (unique) {
+      md = `| action |
+| ----- |
+`
+
+      for (const action of actions) {
+        let value = action
+
+        if (action.indexOf('./') === -1) {
+          const [a] = action.split('@')
+          const [owner, repo] = a.split('/')
+
+          value = `[${action}](https://github.com/${owner}/${repo})`
+        }
+
+        md += `| ${value} |
+`
+      }
+    } else {
+      md = `owner | repo | workflow | action
 ----- | ----- | ----- | -----
 `
 
-    for (const {owner, repo, workflow, action} of actions) {
-      const link = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
+      for (const {owner, repo, workflow, action} of actions) {
+        const link = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
 
-      md += `${owner} | ${repo} | [${workflow}](${link}) | ${action}
+        md += `${owner} | ${repo} | [${workflow}](${link}) | ${action}
 `
+      }
     }
 
     try {
@@ -291,10 +338,10 @@ ${dim('(this could take a while...)')}
 
 /**
  * @typedef {object} Action
- * @property {string} owner
- * @property {string} repo
- * @property {string} workflow
  * @property {string} action
+ * @property {string} [owner]
+ * @property {string} [repo]
+ * @property {string} [workflow]
  * @readonly
  */
 

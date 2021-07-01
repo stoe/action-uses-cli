@@ -20,6 +20,7 @@ $ npx @stoe/action-uses-cli [--options]
 ## Additional options
 
 - `--exclude` Exclude actions created by GitHub, i.e. actions from https://github.com/actions and https://github.com/github organizations
+- `--unique` List unique GitHub Actions only
 - `--csv` Path to CSV file for the output (e.g. `/path/to/action-uses.csv`)
 - `--md` Path to markdown file for the output (e.g. `/path/to/action-uses.md`)
 - `--token`, `-t` GitHub Personal Access Token (PAT) (default `GITHUB_TOKEN`)
