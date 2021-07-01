@@ -25,7 +25,7 @@ const cli = meow(
                          ${dim(
                            'i.e. actions from https://github.com/actions and https://github.com/github organizations'
                          )}
-    ${yellow(`--unique`)}             List unique GitHub Actions ${dim('(only applies to default JSON output)')}
+    ${yellow(`--unique`)}             List unique GitHub Actions only
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
     ${yellow(`--md`)}                 Path to markdown for the output ${dim('(e.g. /path/to/action-uses.md)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
