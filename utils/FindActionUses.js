@@ -156,7 +156,32 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
     )
   }
 
-  return actions
+  return actions.sort(sortActions)
+}
+
+/**
+ * @private
+ * @function sortActions
+ *
+ * @param {Action} a
+ * @param {Action} b
+ *
+ * @returns {number}
+ */
+const sortActions = (a, b) => {
+  // Use toUpperCase() to ignore character casing
+  const A = a.action.toUpperCase()
+  const B = b.action.toUpperCase()
+
+  let comparison = 0
+
+  if (A > B) {
+    comparison = 1
+  } else if (A < B) {
+    comparison = -1
+  }
+
+  return comparison
 }
 
 class FindActionUses {
