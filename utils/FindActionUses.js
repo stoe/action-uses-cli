@@ -156,7 +156,32 @@ const findActionsUsed = async (octokit, {owner, repo = null, exclude = false}) =
     )
   }
 
-  return actions
+  return actions.sort(sortActions)
+}
+
+/**
+ * @private
+ * @function sortActions
+ *
+ * @param {Action} a
+ * @param {Action} b
+ *
+ * @returns {number}
+ */
+const sortActions = (a, b) => {
+  // Use toUpperCase() to ignore character casing
+  const A = a.action.toUpperCase()
+  const B = b.action.toUpperCase()
+
+  let comparison = 0
+
+  if (A > B) {
+    comparison = 1
+  } else if (A < B) {
+    comparison = -1
+  }
+
+  return comparison
 }
 
 class FindActionUses {
@@ -301,16 +326,16 @@ ${dim('(this could take a while...)')}
 `
 
       for (const action of actions) {
-        let value = action
+        let _action = action
 
         if (action.indexOf('./') === -1) {
           const [a] = action.split('@')
           const [owner, repo] = a.split('/')
 
-          value = `[${action}](https://github.com/${owner}/${repo})`
+          _action = `[${action}](https://github.com/${owner}/${repo})`
         }
 
-        md += `| ${value} |
+        md += `| ${_action} |
 `
       }
     } else {
@@ -319,9 +344,17 @@ ${dim('(this could take a while...)')}
 `
 
       for (const {owner, repo, workflow, action} of actions) {
-        const link = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
+        const workflowLink = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
+        let _action = action
 
-        md += `${owner} | ${repo} | [${workflow}](${link}) | ${action}
+        if (action.indexOf('./') === -1) {
+          const [a] = action.split('@')
+          const [o, r] = a.split('/')
+
+          _action = `[${action}](https://github.com/${o}/${r})`
+        }
+
+        md += `${owner} | ${repo} | [${workflow}](${workflowLink}) | ${_action}
 `
       }
     }
