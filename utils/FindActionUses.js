@@ -349,9 +349,9 @@ ${dim('(this could take a while...)')}
 
         if (action.indexOf('./') === -1) {
           const [a] = action.split('@')
-          const [owner, repo] = a.split('/')
+          const [o, r] = a.split('/')
 
-          _action = `[${action}](https://github.com/${owner}/${repo})`
+          _action = `[${action}](https://github.com/${o}/${r})`
         }
 
         md += `${owner} | ${repo} | [${workflow}](${workflowLink}) | ${_action}
