@@ -287,7 +287,8 @@ ${dim('(this could take a while...)')}
         actions.map(i => [i]),
         {
           header: true,
-          columns: ['action']
+          columns: ['action'],
+          record_delimiter: ',\n'
         }
       )
     } else {
