@@ -1,4 +1,4 @@
-name: Publish Node.js Package
+name: publish
 
 on:
   push:
@@ -21,7 +21,6 @@ jobs:
           node-version: 14.x
           registry-url: 'https://registry.npmjs.org'
           scope: '@stoe'
-          cache: 'npm'
 
       # Publish to npm
       - run: npm publish --access public
@@ -33,7 +32,6 @@ jobs:
           node-version: 14.x
           registry-url: 'https://npm.pkg.github.com'
           scope: '@stoe'
-          cache: 'npm'
 
       # Publish to GitHub Packages
       - run: npm publish --access public

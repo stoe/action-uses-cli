@@ -21,23 +21,20 @@ jobs:
   codeql:
     runs-on: ubuntu-latest
 
+    permissions: read-all
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 2
 
-      - name: Checkout PR
-        run: git checkout HEAD^2
+      - run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+      - uses: github/codeql-action/init@v1
         with:
           languages: javascript
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+      - uses: github/codeql-action/autobuild@v1
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+      - uses: github/codeql-action/analyze@v1
