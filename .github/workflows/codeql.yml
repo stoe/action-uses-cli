@@ -1,21 +1,10 @@
 name: codeql
 
 on:
-  push:
-    paths:
-      - '*/*.js'
-      - '.github/workflows/codeql.yml'
-    branches-ignore:
-      - main
-    tags-ignore:
-      - 'v*'
   pull_request:
     paths:
       - '*/*.js'
       - '.github/workflows/codeql.yml'
-  schedule:
-    # every Monday at 01:00 UTC
-    - cron: '0 1 * * 1'
 
 jobs:
   codeql:
