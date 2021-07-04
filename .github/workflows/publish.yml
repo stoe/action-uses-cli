@@ -37,8 +37,3 @@ jobs:
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/delete-package-versions@v1
-        with:
-          package-name: '@stoe/action-uses-cli'
-          num-old-versions-to-delete: 5
