@@ -10,7 +10,7 @@
   "plugins": ["github"],
   "extends": ["plugin:github/recommended"],
   "rules": {
-    "camelcase": ["error", {"allow": ["per_page"]}],
+    "camelcase": ["error", {"allow": ["per_page", "record_delimiter"]}],
     "no-console": "off"
   }
 }
