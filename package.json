@@ -19,7 +19,7 @@
     "npm": ">=7"
   },
   "bin": {
-    "action-uses-cli": "./index.js"
+    "action-uses-cli": "index.js"
   },
   "directories": {
     "lib": "utils"
