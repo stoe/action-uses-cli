@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
+import FindActionUses from './utils/FindActionUses.mjs'
 import chalk from 'chalk'
 import meow from 'meow'
-import FindActionUses from './utils/FindActionUses.js'
 
 const {dim, blue, bold, red, yellow} = chalk
 const cli = meow(
@@ -44,7 +44,7 @@ const cli = meow(
     $ action-uses-cli -o stoe
 
     ${dim('# Output GitHub Actions `uses` for the stoe/action-uses-cli repository to stdout')}
-    $ action-uses-cli -o stoe/action-uses-cli
+    $ action-uses-cli -r stoe/action-uses-cli
 
     ${dim('# Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.csv')}
     $ action-uses-cli -o my-org --csv /path/to/action-uses.csv

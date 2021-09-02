@@ -1,12 +1,10 @@
-import stringify from 'csv-stringify/lib/sync.js'
-import chalk from 'chalk'
-import wait from './wait.js'
-
-import {writeFileSync} from 'fs'
-import {load} from 'js-yaml'
 import {Octokit} from '@octokit/core'
-import {throttling} from '@octokit/plugin-throttling'
+import chalk from 'chalk'
+import {load} from 'js-yaml'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
+import stringify from 'csv-stringify/lib/sync.js'
+import {throttling} from '@octokit/plugin-throttling'
+import {writeFileSync} from 'fs'
 
 const {blue, dim, inverse, italic, red, yellow} = chalk
 const MyOctokit = Octokit.plugin(throttling, paginateRest)
@@ -182,6 +180,16 @@ const sortActions = (a, b) => {
   }
 
   return comparison
+}
+
+const wait = milliseconds => {
+  return new Promise(resolve => {
+    if (typeof milliseconds !== 'number') {
+      throw new Error('milliseconds not a number')
+    }
+
+    setTimeout(() => resolve('done!'), milliseconds)
+  })
 }
 
 class FindActionUses {

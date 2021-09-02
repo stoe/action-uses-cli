@@ -40,7 +40,7 @@ $ action-uses-cli -o my-org
 $ action-uses-cli -o stoe
 
 # Output GitHub Actions `uses` for the stoe/action-uses-cli repository to stdout
-$ action-uses-cli -o stoe/action-uses-cli
+$ action-uses-cli -r stoe/action-uses-cli
 
 # Output GitHub Actions `uses` for all organization repositories to /path/to/action-uses.csv
 $ action-uses-cli -o my-org --csv /path/to/action-uses.csv
