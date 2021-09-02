@@ -30,7 +30,7 @@
     "license",
     "readme.md"
   ],
-  "exports": "./utils/FindActionUses.js",
+  "exports": "./utils/FindActionUses.mjs",
   "scripts": {
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."

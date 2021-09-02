@@ -7,10 +7,24 @@
     "es6": true,
     "node": true
   },
-  "plugins": ["github"],
-  "extends": ["plugin:github/recommended"],
+  "plugins": [
+    "github"
+  ],
+  "extends": [
+    "plugin:github/recommended"
+  ],
   "rules": {
-    "camelcase": ["error", {"allow": ["per_page", "record_delimiter"]}],
-    "no-console": "off"
+    "camelcase": [
+      "error",
+      {
+        "allow": [
+          "per_page",
+          "record_delimiter"
+        ]
+      }
+    ],
+    "no-console": "off",
+    "filenames/match-regex": "off",
+    "i18n-text/no-en": "off"
   }
 }
