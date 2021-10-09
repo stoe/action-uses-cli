@@ -1,24 +1,18 @@
-name: codeql
+name: CodeQL
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    paths:
-      - '*/*.js'
-      - '.github/workflows/codeql.yml'
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
 
 jobs:
   codeql:
-    runs-on: ubuntu-latest
-
-    permissions: read-all
-
-    steps:
-      - uses: actions/checkout@v2.3.4
-
-      - uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
-
-      - uses: github/codeql-action/autobuild@v1
-
-      - uses: github/codeql-action/analyze@v1
+    uses: stoe/policies/.github/workflows/policy-node-codeql.yml@main
