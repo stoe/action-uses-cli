@@ -15,4 +15,4 @@ permissions:
 
 jobs:
   codeql:
-    uses: stoe/policies/.github/workflows/policy-node-codeql.yml@main
+    uses: stoe/policies/workflows/policy-node-codeql.yml@main

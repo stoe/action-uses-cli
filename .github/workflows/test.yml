@@ -1,11 +1,6 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '*.md'
   pull_request:
     branches:
       - main
@@ -16,4 +11,4 @@ permissions: read-all
 
 jobs:
   test:
-    uses: stoe/policies/.github/workflows/policy-node-test.yml@main
+    uses: stoe/policies/workflows/policy-node-test.yml@main
