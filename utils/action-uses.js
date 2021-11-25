@@ -287,7 +287,7 @@ ${dim('(this could take a while...)')}
    * @param {{actions: Action[], unique: string[]}} actions
    * @param {boolean|'both'} uniqueFlag
    *
-   * @returns {void}
+   * @returns {{csv: string, csvUnique: string}|false}
    */
   async saveCsv({actions, unique}, uniqueFlag) {
     const {csvPath} = this
@@ -330,8 +330,12 @@ ${dim('(this could take a while...)')}
         default:
           throw new Error(`unknown uniqueFlag: ${uniqueFlag}`)
       }
+
+      return {csv, csvUnique}
     } catch (error) {
       console.error(red(error.message))
+
+      return false
     }
   }
 
@@ -340,7 +344,7 @@ ${dim('(this could take a while...)')}
    * @param {{actions: Action[], unique: string[]}} actions
    * @param {boolean|'both'} uniqueFlag
    *
-   * @returns {void}
+   * @returns {{md: string, mdUnique: string}|false}
    */
   async saveMarkdown({actions, unique}, uniqueFlag) {
     const {mdPath} = this
@@ -403,8 +407,12 @@ ${dim('(this could take a while...)')}
         default:
           throw new Error(`unknown uniqueFlag: ${uniqueFlag}`)
       }
+
+      return {md, mdUnique}
     } catch (error) {
       console.error(red(error.message))
+
+      return false
     }
   }
 }
