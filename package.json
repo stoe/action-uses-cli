@@ -15,14 +15,17 @@
   "license": "MIT",
   "repository": "github:stoe/action-uses-cli",
   "engines": {
-    "node": ">=14",
-    "npm": ">=7"
+    "node": ">=16",
+    "npm": ">=8"
   },
   "bin": {
     "action-uses-cli": "index.js"
   },
-  "directories": {
-    "lib": "utils"
+  "exports": {
+    ".": "./utils/action-uses.js",
+    "./utils": "./utils/action-uses.js",
+    "./utils/*": "./utils/*.js",
+    "./package.json": "./package.json"
   },
   "files": [
     "utils/",
@@ -30,7 +33,6 @@
     "license",
     "readme.md"
   ],
-  "exports": "./utils/FindActionUses.mjs",
   "scripts": {
     "format": "npx prettier --config-precedence prefer-file --write . && eslint . --fix",
     "prepare": "husky install ./.github/husky",

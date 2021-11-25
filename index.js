@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import FindActionUses from './utils/FindActionUses.mjs'
+// eslint-disable-next-line import/extensions
+import FindActionUses from './utils/action-uses.js'
 import chalk from 'chalk'
 import meow from 'meow'
 
