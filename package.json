@@ -32,6 +32,8 @@
   ],
   "exports": "./utils/FindActionUses.mjs",
   "scripts": {
+    "format": "npx prettier --config-precedence prefer-file --write . && eslint . --fix",
+    "prepare": "husky install ./.github/husky",
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."
   },
@@ -50,6 +52,13 @@
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-github": "^4.3.5",
+    "husky": "^7.0.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "./.github/husky/pre-commit",
+      "pre-push": "./.github/husky/pre-push"
+    }
   },
   "prettier": "@github/prettier-config"
 }
