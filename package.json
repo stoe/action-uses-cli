@@ -15,14 +15,17 @@
   "license": "MIT",
   "repository": "github:stoe/action-uses-cli",
   "engines": {
-    "node": ">=14",
-    "npm": ">=7"
+    "node": ">=16",
+    "npm": ">=8"
   },
   "bin": {
     "action-uses-cli": "index.js"
   },
-  "directories": {
-    "lib": "utils"
+  "exports": {
+    ".": "./utils/action-uses.js",
+    "./utils": "./utils/action-uses.js",
+    "./utils/*": "./utils/*.js",
+    "./package.json": "./package.json"
   },
   "files": [
     "utils/",
@@ -30,26 +33,34 @@
     "license",
     "readme.md"
   ],
-  "exports": "./utils/FindActionUses.mjs",
   "scripts": {
+    "format": "npx prettier --config-precedence prefer-file --write . && eslint . --fix",
+    "prepare": "husky install ./.github/husky",
     "pretest": "npx eslint-config-prettier .eslintrc.json",
     "test": "eslint ."
   },
   "dependencies": {
     "@octokit/core": "^3.5.1",
-    "@octokit/plugin-paginate-rest": "^2.16.0",
-    "@octokit/plugin-throttling": "^3.5.1",
+    "@octokit/plugin-paginate-rest": "^2.17.0",
+    "@octokit/plugin-throttling": "^3.5.2",
     "chalk": "^4.1.2",
-    "csv-stringify": "^6.0.4",
+    "csv": "^6.0.4",
     "js-yaml": "^4.1.0",
-    "meow": "^10.1.1"
+    "meow": "^10.1.2"
   },
   "devDependencies": {
     "@github/prettier-config": "^0.0.4",
-    "@octokit/openapi-types": "^11.1.0",
+    "@octokit/openapi-types": "^11.2.0",
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-github": "^4.2.0"
+    "eslint-plugin-github": "^4.3.5",
+    "husky": "^7.0.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "./.github/husky/pre-commit",
+      "pre-push": "./.github/husky/pre-push"
+    }
   },
   "prettier": "@github/prettier-config"
 }
