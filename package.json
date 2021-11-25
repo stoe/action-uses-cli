@@ -1,6 +1,6 @@
 {
   "name": "@stoe/action-uses-cli",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "type": "module",
   "description": "CLI to grab GitHub action `uses` strings",
   "keywords": [
