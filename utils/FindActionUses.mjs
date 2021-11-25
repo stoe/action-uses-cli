@@ -2,11 +2,12 @@ import {Octokit} from '@octokit/core'
 import chalk from 'chalk'
 import {load} from 'js-yaml'
 import {paginateRest} from '@octokit/plugin-paginate-rest'
-import stringify from 'csv-stringify/lib/sync.js'
+// eslint-disable-next-line import/no-unresolved
+import {stringify} from 'csv-stringify/sync'
 import {throttling} from '@octokit/plugin-throttling'
 import {writeFileSync} from 'fs'
 
-const {blue, dim, inverse, italic, red, yellow} = chalk
+const {blue, dim, inverse, red, yellow} = chalk
 const MyOctokit = Octokit.plugin(throttling, paginateRest)
 
 const ORG_QUERY = `query ($enterprise: String!, $cursor: String = null) {
@@ -198,15 +199,17 @@ class FindActionUses {
    * @param {string} repository
    * @param {string} csv
    * @param {string} md
+   * @param {boolean|'both'} uniqueFlag
    * @param {boolean} exclude
    */
-  constructor(token, enterprise, owner, repository, csv, md, exclude) {
+  constructor(token, enterprise, owner, repository, csv, md, uniqueFlag, exclude) {
     this.token = token
     this.enterprise = enterprise
     this.owner = owner
     this.repository = repository
     this.csvPath = csv
     this.mdPath = md
+    this.uniqueFlag = uniqueFlag
     this.exclude = exclude
 
     this.octokit = new MyOctokit({
@@ -228,19 +231,21 @@ class FindActionUses {
   }
 
   /**
-   * @returns {Action[]}
+   * @async
+   * @param {boolean|'both'} uniqueFlag
+   *
+   * @returns {{actions: Action[], unique: string[]}}
    */
-  async getActionUses(unique) {
+  async getActionUses(uniqueFlag) {
     const {octokit, enterprise, exclude, owner, repository} = this
 
     console.log(`
-Gathering ${unique ? italic('unique ') : ''}GitHub Action ${inverse('uses')} strings for ${blue(
-      enterprise || owner || repository
-    )}
+Gathering GitHub Action ${inverse('uses')} strings for ${blue(enterprise || owner || repository)}
 ${dim('(this could take a while...)')}
 `)
 
     let actions = []
+    let unique = []
 
     if (enterprise) {
       const orgs = await getOrganizations(octokit, enterprise)
@@ -264,115 +269,143 @@ ${dim('(this could take a while...)')}
       actions = await findActionsUsed(octokit, {owner: repoOwner, repo, exclude})
     }
 
-    if (unique) {
+    if (uniqueFlag !== false) {
       const actionsSet = new Set()
 
       actions.map(({action}) => {
         actionsSet.add(action)
       })
 
-      return [...actionsSet]
+      unique = [...actionsSet]
     }
 
-    return actions
+    return {actions, unique}
   }
 
   /**
-   * @param {Action[]} actions
-   * @param {boolean} unique
-   * @returns {string}
+   * @async
+   * @param {{actions: Action[], unique: string[]}} actions
+   * @param {boolean|'both'} uniqueFlag
+   *
+   * @returns {void}
    */
-  async saveCsv(actions, unique) {
+  async saveCsv({actions, unique}, uniqueFlag) {
     const {csvPath} = this
-    let csv = ''
+    const csvPathUnique = `${csvPath.replace('.csv', '-unique.csv')}`
 
-    console.log(`saving CSV in ${blue(`${csvPath}`)}`)
+    const csv = stringify(
+      actions.map(i => [i.owner, i.repo, i.workflow, i.action]),
+      {
+        header: true,
+        columns: ['owner', 'repo', 'workflow', 'action']
+      }
+    )
 
-    if (unique) {
-      csv = stringify(
-        actions.map(i => [i]),
-        {
-          header: true,
-          columns: ['action'],
-          record_delimiter: ',\n'
-        }
-      )
-    } else {
-      csv = stringify(
-        actions.map(i => [i.owner, i.repo, i.workflow, i.action]),
-        {
-          header: true,
-          columns: ['owner', 'repo', 'workflow', 'action']
-        }
-      )
-    }
+    const csvUnique = stringify(
+      unique.map(i => [i]),
+      {
+        header: true,
+        columns: ['action'],
+        record_delimiter: ',\n'
+      }
+    )
 
     try {
-      await writeFileSync(csvPath, csv)
+      switch (uniqueFlag) {
+        case true:
+          console.log(`saving CSV in ${blue(`${csvPath}`)}`)
+          await writeFileSync(csvPath, csvUnique)
+          break
+        case false:
+          console.log(`saving CSV in ${blue(`${csvPath}`)}`)
+          await writeFileSync(csvPath, csv)
+          break
+        case 'both':
+          console.log(`saving CSV in ${blue(`${csvPath}`)}`)
+          await writeFileSync(csvPath, csv)
+
+          console.log(`saving unique CSV in ${blue(`${csvPathUnique}`)}`)
+          await writeFileSync(csvPathUnique, csvUnique)
+          break
+        default:
+          throw new Error(`unknown uniqueFlag: ${uniqueFlag}`)
+      }
     } catch (error) {
       console.error(red(error.message))
     }
-
-    return csv
   }
 
   /**
-   * @param {Action[]} actions
-   * @param {boolean} unique
-   * @returns {string}
+   * @async
+   * @param {{actions: Action[], unique: string[]}} actions
+   * @param {boolean|'both'} uniqueFlag
+   *
+   * @returns {void}
    */
-  async saveMarkdown(actions, unique) {
+  async saveMarkdown({actions, unique}, uniqueFlag) {
     const {mdPath} = this
-    let md = ''
+    const mdPathUnique = `${mdPath.replace('.md', '-unique.md')}`
 
-    console.log(`saving markdown in ${blue(`${mdPath}`)}`)
-
-    if (unique) {
-      md = `| action |
-| ----- |
-`
-
-      for (const action of actions) {
-        let _action = action
-
-        if (action.indexOf('./') === -1) {
-          const [a] = action.split('@')
-          const [owner, repo] = a.split('/')
-
-          _action = `[${action}](https://github.com/${owner}/${repo})`
-        }
-
-        md += `| ${_action} |
-`
-      }
-    } else {
-      md = `owner | repo | workflow | action
+    let md = `owner | repo | workflow | action
 ----- | ----- | ----- | -----
 `
 
-      for (const {owner, repo, workflow, action} of actions) {
-        const workflowLink = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
-        let _action = action
+    for (const {owner, repo, workflow, action} of actions) {
+      const workflowLink = `https://github.com/${owner}/${repo}/blob/HEAD/${workflow}`
+      let _action = action
 
-        if (action.indexOf('./') === -1) {
-          const [a] = action.split('@')
-          const [o, r] = a.split('/')
+      if (action.indexOf('./') === -1) {
+        const [a] = action.split('@')
+        const [o, r] = a.split('/')
 
-          _action = `[${action}](https://github.com/${o}/${r})`
-        }
-
-        md += `${owner} | ${repo} | [${workflow}](${workflowLink}) | ${_action}
-`
+        _action = `[${action}](https://github.com/${o}/${r})`
       }
+
+      md += `${owner} | ${repo} | [${workflow}](${workflowLink}) | ${_action}
+`
+    }
+
+    let mdUnique = `| action |
+| ----- |
+`
+
+    for (const action of unique) {
+      let _action = action
+
+      if (action.indexOf('./') === -1) {
+        const [a] = action.split('@')
+        const [owner, repo] = a.split('/')
+
+        _action = `[${action}](https://github.com/${owner}/${repo})`
+      }
+
+      mdUnique += `| ${_action} |
+`
     }
 
     try {
-      writeFileSync(mdPath, md)
+      switch (uniqueFlag) {
+        case true:
+          console.log(`saving markdown in ${blue(`${mdPath}`)}`)
+          await writeFileSync(mdPath, mdUnique)
+          break
+        case false:
+          console.log(`saving markdown in ${blue(`${mdPath}`)}`)
+          await writeFileSync(mdPath, md)
+          break
+        case 'both':
+          console.log(`saving markdown in ${blue(`${mdPath}`)}`)
+          await writeFileSync(mdPath, md)
+
+          console.log(`saving unique markdown in ${blue(`${mdPathUnique}`)}`)
+          await writeFileSync(mdPathUnique, mdUnique)
+          break
+        default:
+          throw new Error(`unknown uniqueFlag: ${uniqueFlag}`)
+      }
     } catch (error) {
       console.error(red(error.message))
     }
-
-    return md
   }
 }
 

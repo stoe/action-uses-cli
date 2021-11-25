@@ -25,7 +25,8 @@ const cli = meow(
                          ${dim(
                            'i.e. actions from https://github.com/actions and https://github.com/github organizations'
                          )}
-    ${yellow(`--unique`)}             List unique GitHub Actions only
+    ${yellow(`--unique`)}             List unique GitHub Actions.
+                         ${dim(`Possible values are ${yellow('true')}, ${yellow('false')} and ${yellow('both')}`)}
     ${yellow(`--csv`)}                Path to CSV for the output ${dim('(e.g. /path/to/action-uses.csv)')}
     ${yellow(`--md`)}                 Path to markdown for the output ${dim('(e.g. /path/to/action-uses.md)')}
     ${yellow(`--token`)}, ${yellow(`-t`)}          GitHub Personal Access Token (PAT) ${dim('(default GITHUB_TOKEN)')}
@@ -88,7 +89,6 @@ const cli = meow(
         default: false
       },
       unique: {
-        type: 'boolean',
         default: false
       },
       csv: {
@@ -110,7 +110,7 @@ const cli = meow(
 ;(async () => {
   try {
     // Get options/flags
-    const {help, version, enterprise, exclude, unique, owner, repository, csv, md, token} = cli.flags
+    const {help, version, enterprise, exclude, unique: _unique, owner, repository, csv, md, token} = cli.flags
 
     help && cli.showHelp(0)
     version && cli.showVersion(0)
@@ -124,7 +124,12 @@ const cli = meow(
     }
 
     if ((enterprise && owner) || (enterprise && repository) || (owner && repository)) {
-      throw new Error('can only use one of: enterprise, owner, repository')
+      throw new Error('please provide one of: enterprise, owner, repository')
+    }
+
+    const uniqueFlag = _unique === 'both' ? 'both' : _unique === 'true'
+    if (![true, false, 'both'].includes(uniqueFlag)) {
+      throw new Error('please provide a valid value for unique: true, false, both')
     }
 
     if (csv === '') {
@@ -135,21 +140,21 @@ const cli = meow(
       throw new Error('please provide a valid path for the markdown output')
     }
 
-    const fau = new FindActionUses(token, enterprise, owner, repository, csv, md, exclude)
-    const actions = await fau.getActionUses(unique)
+    const fau = new FindActionUses(token, enterprise, owner, repository, csv, md, uniqueFlag, exclude)
+    const {actions, unique} = await fau.getActionUses(uniqueFlag)
 
     // create and save CSV
     if (csv) {
-      fau.saveCsv(actions, unique)
+      fau.saveCsv({actions, unique}, uniqueFlag)
     }
 
     // create and save markdown
     if (md) {
-      fau.saveMarkdown(actions, unique)
+      fau.saveMarkdown({actions, unique}, uniqueFlag)
     }
 
     // always output JSON to stdout
-    console.log(JSON.stringify(actions, null, 2))
+    // console.log(JSON.stringify({actions, unique}, null, 2))
   } catch (error) {
     console.error(`\n  ${red('ERROR: %s')}`, error.message)
     cli.showHelp(1)
