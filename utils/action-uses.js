@@ -217,14 +217,13 @@ class FindActionUses {
       throttle: {
         onRateLimit: (retryAfter, options) => {
           console.warn(yellow(`Request quota exhausted for request ${options.method} ${options.url}`))
-
-          if (options.request.retryCount === 0) {
-            console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
-            return true
-          }
+          console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
+          return true
         },
-        onAbuseLimit: (retryAfter, options) => {
-          console.warn(yellow(`Abuse detected for request ${options.method} ${options.url}`))
+        onSecondaryRateLimit: (retryAfter, options) => {
+          console.warn(red(`Secondary rate limit hit detected for request ${options.method} ${options.url}`))
+          console.warn(yellow(`Retrying after ${retryAfter} seconds!`))
+          return true
         }
       }
     })
