@@ -40,7 +40,7 @@
     "test": "eslint ."
   },
   "dependencies": {
-    "@octokit/core": "^3.5.1",
+    "@octokit/core": "^4.0.5",
     "@octokit/plugin-paginate-rest": "^2.17.0",
     "@octokit/plugin-throttling": "^4.0.0",
     "chalk": "^5.0.1",
