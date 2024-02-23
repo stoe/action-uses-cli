@@ -49,7 +49,7 @@
     "meow": "^10.1.2"
   },
   "devDependencies": {
-    "@github/prettier-config": "^0.0.4",
+    "@github/prettier-config": "^0.0.6",
     "@octokit/openapi-types": "^13.4.0",
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
