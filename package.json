@@ -46,7 +46,7 @@
     "chalk": "^5.0.1",
     "csv": "^6.0.4",
     "js-yaml": "^4.1.0",
-    "meow": "^10.1.2"
+    "meow": "^13.2.0"
   },
   "devDependencies": {
     "@github/prettier-config": "^0.0.4",
